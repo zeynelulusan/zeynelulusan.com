@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>Doğa'nın Aşı Takvimi</title>
+<meta name="description" content="Doğa'nın T.C. Sağlık Bakanlığı çocukluk dönemi aşı takvimine göre dijital aşı kartı.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: duvar takvimi — her aşı ziyareti spiralli bir takvim yaprağı; yapraklar ızgarada sıralı */
+:root {
+  --bg: #eef1ec;
+  --paper: #ffffff;
+  --ink: #1f2a26;
+  --muted: #6b7871;
+  --line: #dde3dc;
+  --done: #2f8f6b;
+  --done-soft: #e3f2ea;
+  --next: #d0731c;
+  --next-soft: #fcefdf;
+  --plan: #7d8c95;
+  --plan-soft: #eef1f3;
+  --ring: #b8c1bc;
+  --on-band: #ffffff;
+  --accent: #3a6ea5;
+  --font-display: "Young Serif", Georgia, "Times New Roman", serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111614; --paper: #1b2220; --ink: #e8eee9; --muted: #9aa8a1; --line: #2c3632;
+    --done: #3fa57d; --done-soft: #1c3128; --next: #e08a3a; --next-soft: #392818;
+    --plan: #5e6d75; --plan-soft: #232b2e; --ring: #4a5550; --on-band: #ffffff; --accent: #86b2e0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111614; --paper: #1b2220; --ink: #e8eee9; --muted: #9aa8a1; --line: #2c3632;
+  --done: #3fa57d; --done-soft: #1c3128; --next: #e08a3a; --next-soft: #392818;
+  --plan: #5e6d75; --plan-soft: #232b2e; --ring: #4a5550; --on-band: #ffffff; --accent: #86b2e0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 36px 56px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; text-wrap: balance; }
+.num { font-variant-numeric: tabular-nums; }
+.eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+/* Başlık */
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 32px; }
+header h1 { font-size: clamp(36px, 7vw, 56px); line-height: 1; margin-top: 6px; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 24px; margin-top: 12px; color: var(--muted); font-size: 15px; }
+.facts b { color: var(--ink); font-weight: 600; }
+.progress { min-width: 0; width: min(100%, 280px); }
+.progress .row { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+.progress .row b { color: var(--ink); font-weight: 600; }
+.bar { height: 10px; border-radius: 99px; background: var(--paper); border: 1px solid var(--line); overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--done); border-radius: 99px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+/* Takvim yaprakları */
+.pages { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 28px 20px; }
+.page {
+  --band: var(--plan); --soft: var(--plan-soft);
+  position: relative; background: var(--paper); border-radius: 14px;
+  box-shadow: 0 1px 0 var(--line), 0 8px 24px -14px rgba(20, 40, 30, .35);
+  display: flex; flex-direction: column; margin-top: 10px;
+}
+.page.done { --band: var(--done); --soft: var(--done-soft); }
+.page.next { --band: var(--next); --soft: var(--next-soft); outline: 2px solid var(--next); outline-offset: 3px; }
+.rings { position: absolute; top: -10px; left: 0; right: 0; display: flex; justify-content: center; gap: 64px; pointer-events: none; }
+.rings i { width: 10px; height: 22px; border-radius: 6px; background: var(--paper); border: 2px solid var(--ring); }
+.band {
+  background: var(--band); color: var(--on-band); border-radius: 14px 14px 0 0;
+  padding: 18px 18px 12px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+}
+.band .age { font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: 13px; }
+.band .tag { font-size: 12px; font-weight: 600; background: rgba(255,255,255,.22); padding: 2px 9px; border-radius: 99px; white-space: nowrap; }
+.day { padding: 14px 18px 4px; display: flex; align-items: flex-end; gap: 12px; border-bottom: 1px dashed var(--line); padding-bottom: 14px; }
+.day strong { font-family: var(--font-display); font-weight: 400; font-size: 64px; line-height: .85; color: var(--band); }
+.day .my { display: flex; flex-direction: column; line-height: 1.25; }
+.day .my b { font-weight: 600; font-size: 16px; }
+.day .my span { color: var(--muted); font-size: 13px; }
+.vax { list-style: none; margin: 0; padding: 12px 18px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.vax li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; font-size: 15px; }
+.vax .mark { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--line); display: grid; place-items: center; margin-top: 1px; }
+.vax .got .mark { background: var(--done); border-color: var(--done); }
+.vax .got .mark::after { content: ""; width: 5px; height: 10px; border: solid var(--on-band); border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); }
+.vax b { font-weight: 600; }
+.vax .dose { color: var(--muted); }
+.countdown { margin: 0 18px 18px; background: var(--soft); border-radius: 10px; padding: 10px 12px; display: flex; align-items: baseline; gap: 8px; font-size: 14px; color: var(--ink); }
+.countdown strong { font-family: var(--font-display); font-weight: 400; font-size: 28px; line-height: 1; color: var(--band); }
+
+/* Sözlük ve notlar */
+.bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+details { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 4px 20px; min-width: 0; }
+summary { cursor: pointer; padding: 14px 0; font-weight: 600; }
+summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0 0 18px; font-size: 15px; }
+dt { font-weight: 600; }
+dd { margin: 0; color: var(--muted); min-width: 0; }
+.note { font-size: 13.5px; color: var(--muted); min-width: 0; }
+.note p { margin: 0 0 8px; max-width: 65ch; }
+
+@media (max-width: 640px) {
+  .bottom { grid-template-columns: 1fr; }
+  dl { grid-template-columns: 1fr; gap: 2px; }
+  dd { margin-bottom: 8px; }
+}
+@media (max-width: 420px) {
+  .pages { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Dijital Aşı Takvimi</div>
+      <h1>Doğa</h1>
+      <div class="facts">
+        <div>Doğum <b class="num" id="birth">14 Ağustos 2026</b></div>
+        <div>Yaş <b class="num" id="age">—</b></div>
+      </div>
+    </div>
+    <div class="progress">
+      <div class="row"><span>Yapılan dozlar</span><b class="num" id="progNum">—</b></div>
+      <div class="bar"><span id="progBar" style="width:0"></span></div>
+    </div>
+  </header>
+
+  <div class="legend">
+    <span><i style="background:var(--done)"></i>Yapıldı</span>
+    <span><i style="background:var(--next)"></i>Sıradaki</span>
+    <span><i style="background:var(--plan)"></i>Planlı (tahmini tarih)</span>
+  </div>
+
+  <ol class="pages" id="pages"></ol>
+
+  <div class="bottom">
+    <details>
+      <summary>Kısaltmalar ne demek?</summary>
+      <dl>
+        <dt>Hep B</dt><dd>Hepatit B</dd>
+        <dt>6'lı Karma</dt><dd>DaBT-İPA-Hib-HepB: difteri, boğmaca, tetanoz, inaktif polio, Haemophilus influenzae tip b, hepatit B</dd>
+        <dt>BCG</dt><dd>Verem (tüberküloz) aşısı, tek doz</dd>
+        <dt>KPA</dt><dd>Konjuge pnömokok aşısı</dd>
+        <dt>OPA</dt><dd>Oral (ağızdan) polio aşısı</dd>
+        <dt>KKK</dt><dd>Kızamık, kızamıkçık, kabakulak</dd>
+        <dt>Hep A</dt><dd>Hepatit A</dd>
+        <dt>DaBT-İPA</dt><dd>4'lü karma: difteri, boğmaca, tetanoz, inaktif polio</dd>
+        <dt>Td</dt><dd>Tetanoz-difteri (erişkin tipi)</dd>
+      </dl>
+    </details>
+    <div class="note">
+      <p>Takvim, T.C. Sağlık Bakanlığı Ulusal Çocukluk Dönemi Aşı Takvimi'ne (2026) göre hazırlanmıştır. İleri tarihler doğum gününe göre tahminidir; kesin randevuyu aile hekimi belirler.</p>
+      <p>Rotavirüs ve menenjit (MenB, MenACWY) aşıları ulusal takvimde yoktur, isteğe bağlıdır. Rotavirüs aşısının ilk dozu en geç 12. haftada yapılmalıdır.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Tarihler YYYY-AA-GG. Yapılan aşıya "done" tarihi ekleyin.
+  const BIRTH = "2026-08-14";
+  const SCHEDULE = [
+    { age: "Doğumda", months: 0, vaccines: [
+      { name: "Hep B", dose: "1. doz", done: "2026-08-14" } ] },
+    { age: "2. ay", months: 2, vaccines: [
+      { name: "6'lı Karma", dose: "1. doz", done: "2026-10-20" },
+      { name: "BCG", dose: "tek doz", done: "2026-10-20" },
+      { name: "KPA", dose: "1. doz", done: "2026-10-20" } ] },
+    { age: "4. ay", months: 4, vaccines: [
+      { name: "6'lı Karma", dose: "2. doz" },
+      { name: "KPA", dose: "2. doz" } ] },
+    { age: "6. ay", months: 6, vaccines: [
+      { name: "6'lı Karma", dose: "3. doz" },
+      { name: "OPA", dose: "1. doz" } ] },
+    { age: "12. ay", months: 12, vaccines: [
+      { name: "KKK", dose: "1. doz" },
+      { name: "Suçiçeği", dose: "1. doz" },
+      { name: "KPA", dose: "rapel" } ] },
+    { age: "18. ay", months: 18, vaccines: [
+      { name: "6'lı Karma", dose: "rapel" },
+      { name: "OPA", dose: "2. doz" },
+      { name: "Hep A", dose: "1. doz" } ] },
+    { age: "24. ay", months: 24, vaccines: [
+      { name: "Hep A", dose: "2. doz" } ] },
+    { age: "4 yaş", months: 48, vaccines: [
+      { name: "KKK", dose: "2. doz" },
+      { name: "DaBT-İPA", dose: "rapel" },
+      { name: "Suçiçeği", dose: "2. doz" } ] },
+    { age: "13 yaş", months: 156, vaccines: [
+      { name: "Td", dose: "rapel" } ] }
+  ];
+
+  const AYLAR = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+  const GUNLER = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+  const parse = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+  const fmt = d => `${d.getDate()} ${AYLAR[d.getMonth()]} ${d.getFullYear()}`;
+  const addMonths = (d, n) => { const r = new Date(d); r.setMonth(r.getMonth() + n); return r; };
+  const dayMs = 86400000;
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  const birth = parse(BIRTH);
+  const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  // Yaş
+  let m = (today.getFullYear() - birth.getFullYear()) * 12 + today.getMonth() - birth.getMonth();
+  if (today.getDate() < birth.getDate()) m--;
+  const restDays = Math.round((today - addMonths(birth, m)) / dayMs);
+  const totalDays = Math.round((today - birth) / dayMs);
+  const ageText = m >= 24 ? `${Math.floor(m / 12)} yaş${m % 12 ? " " + (m % 12) + " ay" : ""}`
+    : m >= 1 ? `${m} ay${restDays ? " " + restDays + " gün" : ""}` : `${totalDays} gün`;
+  document.getElementById("age").textContent = `${ageText} · ${totalDays}. gün`;
+  document.getElementById("birth").textContent = fmt(birth);
+
+  const stops = SCHEDULE.map(s => {
+    const doneDates = s.vaccines.filter(v => v.done).map(v => v.done).sort();
+    const allDone = doneDates.length === s.vaccines.length;
+    const date = allDone ? parse(doneDates[doneDates.length - 1]) : addMonths(birth, s.months);
+    return { ...s, date, allDone };
+  });
+  const nextStop = stops.find(s => !s.allDone);
+
+  const all = stops.flatMap(s => s.vaccines);
+  const doneCount = all.filter(v => v.done).length;
+  document.getElementById("progNum").textContent = `${doneCount} / ${all.length}`;
+  document.getElementById("progBar").style.width = `${(doneCount / all.length) * 100}%`;
+
+  document.getElementById("pages").innerHTML = stops.map(s => {
+    const state = s.allDone ? "done" : s === nextStop ? "next" : "";
+    const tag = s.allDone ? "Yapıldı" : s === nextStop ? "Sıradaki" : "Planlı";
+    const diff = Math.round((s.date - today) / dayMs);
+    const cd = s !== nextStop ? "" : diff > 0
+      ? `<div class="countdown"><strong class="num">${diff}</strong> gün kaldı</div>`
+      : diff === 0 ? `<div class="countdown"><strong>Bugün</strong> aşı günü</div>`
+      : `<div class="countdown"><strong class="num">${-diff}</strong> gün geçti, randevu alın</div>`;
+    const items = s.vaccines.map(v => `<li class="${v.done ? "got" : ""}"><span class="mark"></span>
+      <span><b>${esc(v.name)}</b> <span class="dose">${esc(v.dose)}</span></span></li>`).join("");
+    return `<li class="page ${state}">
+      <div class="rings" aria-hidden="true"><i></i><i></i></div>
+      <div class="band"><span class="age">${esc(s.age)}</span><span class="tag">${tag}</span></div>
+      <div class="day"><strong class="num">${s.date.getDate()}</strong>
+        <span class="my"><b>${AYLAR[s.date.getMonth()]} ${s.date.getFullYear()}</b><span>${s.allDone ? GUNLER[s.date.getDay()] : "tahmini · " + GUNLER[s.date.getDay()]}</span></span></div>
+      <ul class="vax">${items}</ul>
+      ${cd}
+    </li>`;
+  }).join("");
+})();
+</script>
+</body>
+</html>
